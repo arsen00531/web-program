@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Проект прошлого семестра — реестр студентов</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    input {
+      padding: 8px;
+    }
+
+    button {
+      width: fit-content;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background: #f5f5f5;
+    }
+
+    .hint {
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Реестр студентов</h1>
+  <p class="hint">
+    Проект прошлого семестра: форма, объект, localStorage, массив, таблица.
+    Для задания 3 submit блокируется — данные обрабатываются на клиенте.
+  </p>
+
+  <form id="studentForm" method="GET" action="form.php">
+    <label>
+      ФИО
+      <input type="text" name="fullName" id="fullName" required>
+    </label>
+    <label>
+      Группа
+      <input type="text" name="groupName" id="groupName" required>
+    </label>
+    <label>
+      Возраст
+      <input type="number" name="age" id="age" min="16" max="100" required>
+    </label>
+    <button type="submit">Добавить студента</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>ФИО</th>
+        <th>Группа</th>
+        <th>Возраст</th>
+      </tr>
+    </thead>
+    <tbody id="studentsTableBody"></tbody>
+  </table>
+
+  <script>
+    const STORAGE_KEY = "studentsRegistry";
+
+    function createStudent(fullName, groupName, age) {
+      return {
+        fullName: fullName,
+        groupName: groupName,
+        age: Number(age)
+      };
+    }
+
+    function loadStudents() {
+      const rawData = localStorage.getItem(STORAGE_KEY);
+      return rawData ? JSON.parse(rawData) : [];
+    }
+
+    function saveStudents(students) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
+    }
+
+    function renderStudents(students) {
+      const tableBody = document.getElementById("studentsTableBody");
+      tableBody.innerHTML = "";
+
+      students.forEach(function(student, index) {
+        const row = document.createElement("tr");
+        row.innerHTML =
+          "<td>" + (index + 1) + "</td>" +
+          "<td>" + student.fullName + "</td>" +
+          "<td>" + student.groupName + "</td>" +
+          "<td>" + student.age + "</td>";
+        tableBody.appendChild(row);
+      });
+    }
+
+    document.addEventListener("submit", function(evt) {
+      evt.preventDefault();
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const groupName = document.getElementById("groupName").value.trim();
+      const age = document.getElementById("age").value;
+
+      const student = createStudent(fullName, groupName, age);
+      const students = loadStudents();
+      students.push(student);
+      saveStudents(students);
+      renderStudents(students);
+
+      evt.target.reset();
+    });
+
+    renderStudents(loadStudents());
+  </script>
+</body>
+</html>
