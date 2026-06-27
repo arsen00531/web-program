@@ -12,7 +12,6 @@ $resultQuery = $pdo->query($query);
   <title>fetch ASSOC</title>
 </head>
 <body>
-  <p><a href="index.html">← Назад</a></p>
   <h1>fetch(PDO::FETCH_ASSOC)</h1>
   <?php while ($tempData = $resultQuery->fetch(PDO::FETCH_ASSOC)): ?>
     <pre><?php print_r($tempData); ?></pre>

@@ -1,5 +1,3 @@
--- Практика 20. Сортировка
-
 USE myFirstDataBase;
 SELECT * FROM myFirstTable ORDER BY myName;
 SELECT * FROM myFirstTable ORDER BY myName, myAge;

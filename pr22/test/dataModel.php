@@ -23,8 +23,8 @@ function insertUser(PDO $pdo, string $name, int $age): void
 function insertAdmin(PDO $pdo, string $login, string $password): void
 {
     $loginEsc = addslashes($login);
-    $hash = md5($password);
-    $query = "INSERT INTO admin_table VALUES (NULL, '$loginEsc', '$hash')";
+    $passEsc = addslashes($password);
+    $query = "INSERT INTO admin_table (login, password) VALUES ('$loginEsc', '$passEsc')";
     $pdo->query($query);
 }
 

@@ -1,25 +1,52 @@
 <?php
 
-require_once __DIR__ . "/db.php";
+define("ADMIN_FILE", __DIR__ . "/fileAdminDat2025.dat");
+define("USERS_FILE", __DIR__ . "/users.dat");
 
-initDatabase();
-
-function saveUser(array $userData): void
+function saveUserToFile(array $userData): void
 {
-    $pdo = getPdo();
-    $stmt = $pdo->prepare("INSERT INTO users (name, age, phone, email) VALUES (:name, :age, :phone, :email)");
-    $stmt->execute([
-        "name" => $userData["name"],
-        "age" => (int)$userData["age"],
-        "phone" => $userData["phone"],
-        "email" => $userData["email"],
-    ]);
+    $users = loadUsersFromFile();
+    $users[] = $userData;
+
+    $fp = fopen(USERS_FILE, "w") or die("Error open file to write!");
+    foreach ($users as $user) {
+        fputs($fp, json_encode($user, JSON_UNESCAPED_UNICODE) . "\n");
+    }
+    fclose($fp);
+}
+
+function loadUsersFromFile(): array
+{
+    if (!file_exists(USERS_FILE)) {
+        return [];
+    }
+
+    $users = [];
+    $myFileForRead = fopen(USERS_FILE, "r") or die("Error open file to read!");
+
+    while (!feof($myFileForRead)) {
+        $line = trim(fgets($myFileForRead));
+        if ($line === "") {
+            continue;
+        }
+        $decoded = json_decode($line, true);
+        if (is_array($decoded)) {
+            $users[] = $decoded;
+        }
+    }
+
+    fclose($myFileForRead);
+    return $users;
 }
 
 function loadUsers(): array
 {
-    $pdo = getPdo();
-    return $pdo->query("SELECT * FROM users ORDER BY id")->fetchAll();
+    return loadUsersFromFile();
+}
+
+function saveUser(array $userData): void
+{
+    saveUserToFile($userData);
 }
 
 function usersToTable(array $users): string
@@ -29,15 +56,14 @@ function usersToTable(array $users): string
     }
 
     $html = "<table border='all' style='width:100%; border-collapse:collapse; margin-top:16px;'>";
-    $html .= "<tr><th>ID</th><th>Имя</th><th>Возраст</th><th>Телефон</th><th>Email</th></tr>";
+    $html .= "<tr><th>Имя</th><th>Возраст</th><th>Телефон</th><th>Email</th></tr>";
 
     foreach ($users as $user) {
         $html .= "<tr>";
-        $html .= "<td>" . (int)$user["id"] . "</td>";
-        $html .= "<td>" . htmlspecialchars($user["name"]) . "</td>";
-        $html .= "<td>" . (int)$user["age"] . "</td>";
-        $html .= "<td>" . htmlspecialchars($user["phone"]) . "</td>";
-        $html .= "<td>" . htmlspecialchars($user["email"]) . "</td>";
+        $html .= "<td>" . htmlspecialchars($user["name"] ?? "") . "</td>";
+        $html .= "<td>" . htmlspecialchars((string)($user["age"] ?? "")) . "</td>";
+        $html .= "<td>" . htmlspecialchars($user["phone"] ?? "") . "</td>";
+        $html .= "<td>" . htmlspecialchars($user["email"] ?? "") . "</td>";
         $html .= "</tr>";
     }
 
@@ -47,30 +73,48 @@ function usersToTable(array $users): string
 
 function saveAdmin(string $login, string $password): void
 {
-    $pdo = getPdo();
-    $hash = md5($password);
+    $adminData = [];
+    $adminData["login"] = $login;
+    $adminData["pass"] = md5($password);
 
-    $stmt = $pdo->prepare("INSERT INTO admin (login, password_hash) VALUES (:login, :hash)
-        ON DUPLICATE KEY UPDATE login = VALUES(login), password_hash = VALUES(password_hash)");
-    $stmt->execute(["login" => $login, "hash" => $hash]);
+    $string_to_record = json_encode($adminData, JSON_UNESCAPED_UNICODE);
+
+    $fp = fopen(ADMIN_FILE, "w") or die("Error open file to write!");
+    fputs($fp, $string_to_record);
+    fclose($fp);
 }
 
-function findAdminByLogin(string $login): ?array
+function loadAdmin(): ?object
 {
-    $pdo = getPdo();
-    $stmt = $pdo->prepare("SELECT * FROM admin WHERE login = :login LIMIT 1");
-    $stmt->execute(["login" => $login]);
-    $row = $stmt->fetch();
-    return $row ?: null;
+    if (!file_exists(ADMIN_FILE)) {
+        return null;
+    }
+
+    $myFileForRead = fopen(ADMIN_FILE, "r") or die("Error open file to read!");
+    $myObjectFromFile = null;
+
+    while (!feof($myFileForRead)) {
+        $string_from_file = trim(fgets($myFileForRead));
+        if ($string_from_file !== "") {
+            $myObjectFromFile = json_decode($string_from_file, false);
+        }
+    }
+
+    fclose($myFileForRead);
+    return $myObjectFromFile;
 }
 
 function verifyAdmin(string $login, string $password): bool
 {
-    $admin = findAdminByLogin($login);
+    $admin = loadAdmin();
     if ($admin === null) {
         return false;
     }
-    return md5($password) === $admin["password_hash"];
+
+    $storedLogin = $admin->login ?? $admin->name ?? "";
+    $storedPass = $admin->pass ?? "";
+
+    return $login === $storedLogin && md5($password) === $storedPass;
 }
 
 function validatePasswordMatch(string $pass1, string $pass2): array

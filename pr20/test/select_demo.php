@@ -12,7 +12,6 @@ $resultQuery = $pdo->query($query);
   <title>fetch() default</title>
 </head>
 <body>
-  <p><a href="index.html">← Назад</a></p>
   <h1>fetch() — без PDO::FETCH_ASSOC</h1>
   <?php while ($tempData = $resultQuery->fetch()): ?>
     <pre><?php print_r($tempData); ?></pre>

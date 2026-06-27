@@ -1,25 +1,61 @@
 <?php
 
-require_once __DIR__ . "/db.php";
+define("ADMIN_FILE", __DIR__ . "/fileAdminDat2025.dat");
+define("USERS_FILE", __DIR__ . "/users.dat");
 
-initDatabase();
+function writeUsersToFile(array $users): void
+{
+    $fp = fopen(USERS_FILE, "w") or die("Error open file to write!");
+    foreach ($users as $user) {
+        fputs($fp, json_encode($user, JSON_UNESCAPED_UNICODE) . "\n");
+    }
+    fclose($fp);
+}
+
+function loadUsersFromFile(): array
+{
+    if (!file_exists(USERS_FILE)) {
+        return [];
+    }
+
+    $users = [];
+    $myFileForRead = fopen(USERS_FILE, "r") or die("Error open file to read!");
+
+    while (!feof($myFileForRead)) {
+        $line = trim(fgets($myFileForRead));
+        if ($line === "") {
+            continue;
+        }
+        $decoded = json_decode($line, true);
+        if (is_array($decoded)) {
+            $users[] = $decoded;
+        }
+    }
+
+    fclose($myFileForRead);
+    return $users;
+}
+
+function getNextUserId(array $users): int
+{
+    $max = 0;
+    foreach ($users as $user) {
+        $max = max($max, (int)($user["id"] ?? 0));
+    }
+    return $max + 1;
+}
 
 function saveUser(array $userData): void
 {
-    $pdo = getPdo();
-    $stmt = $pdo->prepare("INSERT INTO users (name, age, phone, email) VALUES (:name, :age, :phone, :email)");
-    $stmt->execute([
-        "name" => $userData["name"],
-        "age" => (int)$userData["age"],
-        "phone" => $userData["phone"],
-        "email" => $userData["email"],
-    ]);
+    $users = loadUsersFromFile();
+    $userData["id"] = getNextUserId($users);
+    $users[] = $userData;
+    writeUsersToFile($users);
 }
 
 function loadUsers(): array
 {
-    $pdo = getPdo();
-    return $pdo->query("SELECT * FROM users ORDER BY id")->fetchAll();
+    return loadUsersFromFile();
 }
 
 function usersToTable(array $users, bool $withDelete = false): string
@@ -36,13 +72,13 @@ function usersToTable(array $users, bool $withDelete = false): string
     $html .= "</tr>";
 
     foreach ($users as $user) {
-        $id = (int)$user["id"];
+        $id = (int)($user["id"] ?? 0);
         $html .= "<tr>";
         $html .= "<td>$id</td>";
-        $html .= "<td>" . htmlspecialchars($user["name"]) . "</td>";
-        $html .= "<td>" . (int)$user["age"] . "</td>";
-        $html .= "<td>" . htmlspecialchars($user["phone"]) . "</td>";
-        $html .= "<td>" . htmlspecialchars($user["email"]) . "</td>";
+        $html .= "<td>" . htmlspecialchars($user["name"] ?? "") . "</td>";
+        $html .= "<td>" . (int)($user["age"] ?? 0) . "</td>";
+        $html .= "<td>" . htmlspecialchars($user["phone"] ?? "") . "</td>";
+        $html .= "<td>" . htmlspecialchars($user["email"] ?? "") . "</td>";
         if ($withDelete) {
             $html .= "<td><a href=\"deleteRecord2025.php?deleteId=$id\">Удалить</a></td>";
         }
@@ -55,48 +91,66 @@ function usersToTable(array $users, bool $withDelete = false): string
 
 function deleteRecord(int $idToDelete): void
 {
-    $users = loadUsers();
+    if ($idToDelete <= 0) {
+        return;
+    }
+
+    $users = loadUsersFromFile();
     $newArray = [];
 
     foreach ($users as $user) {
-        if ((int)$user["id"] !== $idToDelete) {
+        if ((int)($user["id"] ?? 0) !== $idToDelete) {
             $newArray[] = $user;
         }
     }
 
-    if ($idToDelete > 0) {
-        $pdo = getPdo();
-        $stmt = $pdo->prepare("DELETE FROM users WHERE id = :id");
-        $stmt->execute(["id" => $idToDelete]);
-    }
+    writeUsersToFile($newArray);
 }
 
 function saveAdmin(string $login, string $password): void
 {
-    $pdo = getPdo();
-    $hash = md5($password);
+    $adminData = [];
+    $adminData["login"] = $login;
+    $adminData["pass"] = md5($password);
 
-    $stmt = $pdo->prepare("INSERT INTO admin (login, password_hash) VALUES (:login, :hash)
-        ON DUPLICATE KEY UPDATE login = VALUES(login), password_hash = VALUES(password_hash)");
-    $stmt->execute(["login" => $login, "hash" => $hash]);
+    $string_to_record = json_encode($adminData, JSON_UNESCAPED_UNICODE);
+
+    $fp = fopen(ADMIN_FILE, "w") or die("Error open file to write!");
+    fputs($fp, $string_to_record);
+    fclose($fp);
 }
 
-function findAdminByLogin(string $login): ?array
+function loadAdmin(): ?object
 {
-    $pdo = getPdo();
-    $stmt = $pdo->prepare("SELECT * FROM admin WHERE login = :login LIMIT 1");
-    $stmt->execute(["login" => $login]);
-    $row = $stmt->fetch();
-    return $row ?: null;
+    if (!file_exists(ADMIN_FILE)) {
+        return null;
+    }
+
+    $myFileForRead = fopen(ADMIN_FILE, "r") or die("Error open file to read!");
+    $myObjectFromFile = null;
+
+    while (!feof($myFileForRead)) {
+        $string_from_file = trim(fgets($myFileForRead));
+        if ($string_from_file !== "") {
+            $myObjectFromFile = json_decode($string_from_file, false);
+        }
+    }
+
+    fclose($myFileForRead);
+    return $myObjectFromFile;
 }
 
 function verifyAdmin(string $login, string $password): bool
 {
-    $admin = findAdminByLogin($login);
+    $admin = loadAdmin();
     if ($admin === null) {
         return false;
     }
-    return md5($password) === $admin["password_hash"];
+
+    $storedLogin = $admin->login ?? $admin->name ?? "";
+    $storedPass = $admin->pass ?? "";
+
+    return $login === $storedLogin && md5($password) === $storedPass;
 }
 
 function validatePasswordMatch(string $pass1, string $pass2): array

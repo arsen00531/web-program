@@ -17,7 +17,7 @@ $adminName = $_SESSION["admin_login"] ?? "";
   <p>Здравствуйте, <?= htmlspecialchars($adminName) ?>!</p>
   <p><a href="logout.php">Выход из режима администратора</a></p>
 
-  <h2>Все пользователи</h2>
+  <h2>Все пользователи (файл users.dat)</h2>
   <?= usersToTable($users, true) ?>
 
   <p><a href="view.php">Добавить пользователя</a></p>

@@ -19,7 +19,7 @@ $users = loadUsers();
   <title>Таблица users</title>
 </head>
 <body>
-  <h1>Пользователи из MySQL</h1>
+  <h1>Пользователи из файла users.dat</h1>
   <?= usersToTable($users) ?>
   <p><a href="view.php">Добавить ещё</a></p>
 </body>
