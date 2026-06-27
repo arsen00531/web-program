@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Практика 3 — форма</title>
+</head>
+<body>
+  <h1>Практическое занятие №3</h1>
+
+  <form method="GET" action="get_main_data.php">
+    <label>
+      n (количество степеней двойки)
+      <input type="number" name="n" min="1" value="10" required>
+    </label>
+    <br><br>
+    <label>
+      value1 (начало диапазона)
+      <input type="number" name="value1" value="10" required>
+    </label>
+    <br><br>
+    <label>
+      value2 (конец диапазона)
+      <input type="number" name="value2" value="20" required>
+    </label>
+    <br><br>
+    <button type="submit">Отправить</button>
+  </form>
+</body>
+</html>

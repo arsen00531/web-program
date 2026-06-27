@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Практика 19</title>
+</head>
+<body>
+  <h1>Практическое занятие №19 — MySQL</h1>
+
+  <h2>Подготовка</h2>
+  <ol>
+    <li>Запустить XAMPP: Apache + <strong>MySQL</strong></li>
+    <li>phpMyAdmin: <a href="http://localhost/phpmyadmin/">http://localhost/phpmyadmin/</a></li>
+    <li>Вкладка SQL — выполнить скрипты из папки <code>sql/</code></li>
+  </ol>
+
+  <h2>SQL-скрипты</h2>
+  <ul>
+    <li><code>sql/myFirstDataBase.sql</code> — база myFirstDataBase, таблица myFirstTable</li>
+    <li><code>sql/library.sql</code> — база library, таблица books</li>
+  </ul>
+
+  <h2>Консоль MySQL (Linux)</h2>
+  <pre>/opt/lampp/bin/mysql -u root</pre>
+
+  <h2>Проверка через PHP</h2>
+  <ul>
+    <li><a href="myFirstTable.php">myFirstDataBase / myFirstTable</a></li>
+    <li><a href="books.php">library / books</a></li>
+  </ul>
+
+  <h2>Примеры команд из задания</h2>
+  <pre>
+SHOW DATABASES;
+USE library;
+SHOW TABLES;
+DESCRIBE books;
+SELECT * FROM myFirstTable WHERE myAge > 40;
+UPDATE myFirstTable SET myAge = 35 WHERE myName = 'Ольга';
+DELETE FROM myFirstTable WHERE myName = 'Sergey';
+  </pre>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Практика 4 — форма</title>
+</head>
+<body>
+  <h1>Три числа</h1>
+  <p><a href="index.html">← Назад</a></p>
+
+  <form method="GET" action="get_data.php">
+    <label>
+      Число 1
+      <input type="number" name="num1" step="any" value="100" required>
+    </label>
+    <br><br>
+    <label>
+      Число 2
+      <input type="number" name="num2" step="any" value="10" required>
+    </label>
+    <br><br>
+    <label>
+      Число 3
+      <input type="number" name="num3" step="any" value="30" required>
+    </label>
+    <br><br>
+    <button type="submit">Отправить</button>
+  </form>
+</body>
+</html>

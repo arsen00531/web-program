@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Практика 2 — форма</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    input {
+      padding: 8px;
+    }
+
+    button {
+      width: fit-content;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Практическое занятие №2</h1>
+  <p>Форма с тремя полями. Метод отправки — GET.</p>
+
+  <form method="GET" action="getAllData.php">
+    <label>
+      Целое число
+      <input type="number" name="param1" step="1" required>
+    </label>
+    <label>
+      Вещественное число
+      <input type="number" name="param2" step="any" required>
+    </label>
+    <label>
+      Строка
+      <input type="text" name="param3" required>
+    </label>
+    <button type="submit">Отправить</button>
+  </form>
+</body>
+</html>
